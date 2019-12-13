@@ -1,6 +1,6 @@
 apply plugin: 'com.github.johnrengelman.shadow'
 
-description = 'Cypher for Apache Flink - Link'
+description = 'Link: Cypher for Apache Flink'
 
 dependencies {
     compile group: 'org.opencypher', name: 'okapi-relational', version: ver.okapi

@@ -1,3 +1,4 @@
 rootProject.name = 'link'
 include 'flink-cypher'
+include 'flink-cypher-testing'
 
