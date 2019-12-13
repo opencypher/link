@@ -16,6 +16,7 @@ import org.opencypher.okapi.relational.api.io.ElementTable
 import org.opencypher.okapi.relational.api.table.{RelationalCypherRecords, RelationalCypherRecordsFactory}
 import org.opencypher.okapi.relational.impl.table.RecordHeader
 import org.opencypher.link.impl.convert.FlinkConversions._
+import org.opencypher.link.impl.convert.rowToCypherMap
 import org.opencypher.link.impl.table.TableOperations._
 
 case class LinkRecordsFactory()(implicit session: LinkSession) extends RelationalCypherRecordsFactory[FlinkTable] {
@@ -110,5 +111,7 @@ trait RecordBehaviour extends RelationalCypherRecords[FlinkTable] {
 
   override def collect: Array[CypherMap] = toCypherMaps.collect().toArray
 
-  def toCypherMaps: DataSet[CypherMap] = ???
+  def toCypherMaps: DataSet[CypherMap] = {
+    table.table.toDataSet[Row].map(rowToCypherMap(header.exprToColumn.toSeq, table.table.getSchema.columnNameToIndex))
+  }
 }
