@@ -24,39 +24,32 @@
  * described as "implementation extensions to Cypher" or as "proposed changes to
  * Cypher that are not yet approved by the openCypher community".
  */
-package org.opencypher.link.testing.support
+package org.opencypher.link.api.value
 
-import org.opencypher.link.impl.LinkRecords
-import org.opencypher.link.testing.LinkTestSuite
-import org.opencypher.okapi.api.table.CypherRecords
-import org.opencypher.okapi.api.value.CypherValue.CypherMap
-import org.opencypher.okapi.testing.Bag
-import org.opencypher.okapi.testing.Bag._
-import org.opencypher.link.impl.LinkConverters._
-import org.scalatest.Assertion
+import org.opencypher.okapi.api.value.CypherValue.{CypherMap, Node, Relationship}
 
-trait RecordMatchingTestSupport {
+case class LinkNode(
+   override val id: Long,
+   override val labels: Set[String] = Set.empty,
+   override val properties: CypherMap = CypherMap.empty) extends Node[Long] {
 
-  self: LinkTestSuite =>
+  override type I = LinkNode
 
-  implicit class RecordMatcher(records: LinkRecords) {
-    def shouldMatch(expected: CypherMap*): Assertion = {
-      records.collect.toBag should equal(Bag(expected: _*))
-    }
-
-    def shouldMatch(expectedRecords: LinkRecords): Assertion = {
-      records.header should equal(expectedRecords.header)
-
-      val actualData = records.toLocalIterator.toSet
-      val expectedData = expectedRecords.toLocalIterator.toSet
-      actualData should equal(expectedData)
-    }
-
+  def copy(id: Long = id, labels: Set[String] = labels, properties: CypherMap = properties) = {
+    LinkNode(id, labels, properties)
   }
+}
 
-  implicit class RichRecords(records: CypherRecords) {
-    val linkRecords: LinkRecords = records.asLink
+case class LinkRelationship (
+   override val id: Long,
+   override val startId: Long,
+   override val endId: Long,
+   override val relType: String,
+   override val properties: CypherMap = CypherMap.empty) extends Relationship[Long] {
 
-    def toMaps: Bag[CypherMap] = Bag(linkRecords.toCypherMaps.collect(): _*)
+  override type I = LinkRelationship
+
+  def copy(id: Long = id, source: Long = startId, target: Long = endId, relType: String = relType, properties: CypherMap = properties) = {
+    LinkRelationship(id, source, target, relType, properties).asInstanceOf[this.type]
   }
 }

@@ -24,39 +24,39 @@
  * described as "implementation extensions to Cypher" or as "proposed changes to
  * Cypher that are not yet approved by the openCypher community".
  */
-package org.opencypher.link.testing.support
+package org.opencypher.link.testing.fixture
 
-import org.opencypher.link.impl.LinkRecords
+import org.apache.flink.api.scala._
+import org.apache.flink.table.api.scala._
+import org.apache.flink.types.Row
+import org.opencypher.link.impl.table.LinkCypherTable.FlinkTable
 import org.opencypher.link.testing.LinkTestSuite
-import org.opencypher.okapi.api.table.CypherRecords
-import org.opencypher.okapi.api.value.CypherValue.CypherMap
-import org.opencypher.okapi.testing.Bag
+import org.opencypher.okapi.ir.api.expr.Expr
+import org.opencypher.okapi.relational.api.table.RelationalCypherRecords
 import org.opencypher.okapi.testing.Bag._
-import org.opencypher.link.impl.LinkConverters._
-import org.scalatest.Assertion
 
-trait RecordMatchingTestSupport {
+trait RecordsVerificationFixture {
 
-  self: LinkTestSuite =>
+  self: LinkTestSuite  =>
 
-  implicit class RecordMatcher(records: LinkRecords) {
-    def shouldMatch(expected: CypherMap*): Assertion = {
-      records.collect.toBag should equal(Bag(expected: _*))
-    }
+  protected def verify(records: RelationalCypherRecords[FlinkTable], expectedExprs: Seq[Expr], expectedData: Bag[Row]): Unit = {
+    val table = records.table.table
+    val header = records.header
+    val expectedColumns = expectedExprs.map(header.column)
+    val columns = table.getSchema.getFieldNames
+    columns.length should equal(expectedColumns.size)
+    columns.toSet should equal(expectedColumns.toSet)
 
-    def shouldMatch(expectedRecords: LinkRecords): Assertion = {
-      records.header should equal(expectedRecords.header)
+    // Array equality is based on reference, not structure. Hence, we need to convert to lists.
+    val actual = records.table.select(expectedColumns: _*).table.collect().map { r =>
+      Row.of((0 until r.getArity).map { i => {
+        r.getField(i) match {
+          case c: Array[_] => c.toList
+          case other => other
+        }
+      }}: _*)
+    }.toBag
 
-      val actualData = records.toLocalIterator.toSet
-      val expectedData = expectedRecords.toLocalIterator.toSet
-      actualData should equal(expectedData)
-    }
-
-  }
-
-  implicit class RichRecords(records: CypherRecords) {
-    val linkRecords: LinkRecords = records.asLink
-
-    def toMaps: Bag[CypherMap] = Bag(linkRecords.toCypherMaps.collect(): _*)
+    actual should equal(expectedData)
   }
 }

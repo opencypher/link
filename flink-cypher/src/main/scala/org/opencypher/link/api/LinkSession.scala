@@ -1,29 +1,38 @@
 package org.opencypher.link.api
 
-import org.apache.calcite.tools.RuleSets
-import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.flink.table.api.{BatchTableEnvironment, TableEnvironment}
-import org.apache.flink.table.calcite.{CalciteConfig, CalciteConfigBuilder}
-import org.apache.flink.table.plan.rules.FlinkRuleSets
-import org.opencypher.link.impl.table.LinkCypherTable.LinkTable
+import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
+import org.apache.flink.table.api.{Table, TableEnvironment}
+import org.apache.flink.table.api.scala.BatchTableEnvironment
+import org.opencypher.link.api.io.LinkElementTableFactory
+import org.opencypher.link.impl.graph.LinkGraphFactory
+import org.opencypher.link.impl.table.LinkCypherTable.FlinkTable
+import org.opencypher.link.impl.{LinkRecords, LinkRecordsFactory}
+import org.opencypher.okapi.api.table.CypherRecords
+import org.opencypher.okapi.api.value.CypherValue.CypherMap
+import org.opencypher.okapi.impl.exception.UnsupportedOperationException
 import org.opencypher.okapi.relational.api.graph.RelationalCypherSession
-
-import scala.collection.JavaConverters._
+import org.opencypher.okapi.relational.api.planning.RelationalCypherResult
 
 sealed class LinkSession private(
   val env: ExecutionEnvironment,
   val tableEnv: BatchTableEnvironment
-) extends RelationalCypherSession[LinkTable] with Serializable {
+) extends RelationalCypherSession[FlinkTable] with Serializable {
 
-  override type Result = this.type
+  override type Result = RelationalCypherResult[FlinkTable]
 
-  override type Records = this.type
+  override type Records = LinkRecords
 
-  override private[opencypher] def records = ???
+  implicit val session: LinkSession = this
 
-  override private[opencypher] def graphs = ???
+  override val records: LinkRecordsFactory = LinkRecordsFactory()
 
-  override private[opencypher] def elementTables = ???
+  override val graphs: LinkGraphFactory = LinkGraphFactory()
+
+  override val elementTables: LinkElementTableFactory = LinkElementTableFactory(session)
+
+  def sql(query: String): LinkRecords = {
+    records.wrap(tableEnv.sqlQuery(query))
+  }
 }
 
 object LinkSession extends Serializable {
@@ -33,4 +42,17 @@ object LinkSession extends Serializable {
   }
 
   def local(): LinkSession = create(ExecutionEnvironment.getExecutionEnvironment)
+
+  implicit class RecordsAsTable(val records: CypherRecords) extends AnyVal {
+
+    def asTable: Table = records match {
+      case link: LinkRecords => link.table.table
+      case _ => throw UnsupportedOperationException(s"can only handle Link records, got $records")
+    }
+
+    def asDataSet: DataSet[CypherMap] = records match {
+      case link: LinkRecords => link.toCypherMaps
+      case _ => throw UnsupportedOperationException(s"can only handle Link records, got $records")
+    }
+  }
 }

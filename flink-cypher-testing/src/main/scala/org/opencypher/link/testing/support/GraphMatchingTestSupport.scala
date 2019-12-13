@@ -29,7 +29,7 @@ package org.opencypher.link.testing.support
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.table.api.BatchTableEnvironment
 import org.apache.flink.table.api.scala._
-import org.opencypher.link.impl.table.LinkCypherTable.LinkTable
+import org.opencypher.link.impl.table.LinkCypherTable.FlinkTable
 import org.opencypher.link.testing.fixture.{FlinkSessionFixture, LinkSessionFixture}
 import org.opencypher.okapi.relational.api.graph.RelationalCypherGraph
 import org.opencypher.okapi.relational.api.table.RelationalCypherRecords
@@ -41,9 +41,8 @@ trait GraphMatchingTestSupport {
   self: BaseTestSuite with FlinkSessionFixture with LinkSessionFixture =>
 
   val env: ExecutionEnvironment = sessionEnv
-  val tableEnv: BatchTableEnvironment = sessionTableEnv
 
-  private def getEntityIds(records: RelationalCypherRecords[LinkTable]): Set[Long] = {
+  private def getEntityIds(records: RelationalCypherRecords[FlinkTable]): Set[Long] = {
     val entityVar = records.header.vars.toSeq match {
       case Seq(v) => v
       case other => throw new UnsupportedOperationException(s"Expected records with 1 entity, got $other")
@@ -52,7 +51,7 @@ trait GraphMatchingTestSupport {
     records.table.table.select(records.header.column(entityVar)).collect().map(_.getField(0).asInstanceOf[Long]).toSet
   }
 
-  private def verify(actual: RelationalCypherGraph[LinkTable], expected: RelationalCypherGraph[LinkTable]): Assertion = {
+  private def verify(actual: RelationalCypherGraph[FlinkTable], expected: RelationalCypherGraph[FlinkTable]): Assertion = {
     val expectedNodeIds = getEntityIds(expected.nodes("n"))
     val expectedRelIds = getEntityIds(expected.relationships("r"))
 
@@ -63,8 +62,8 @@ trait GraphMatchingTestSupport {
     expectedRelIds should equal(actualRelIds)
   }
 
-  implicit class GraphsMatcher(graphs: Map[String, RelationalCypherGraph[LinkTable]]) {
-    def shouldMatch(expectedGraphs: RelationalCypherGraph[LinkTable]*): Unit = {
+  implicit class GraphsMatcher(graphs: Map[String, RelationalCypherGraph[FlinkTable]]) {
+    def shouldMatch(expectedGraphs: RelationalCypherGraph[FlinkTable]*): Unit = {
       withClue("expected and actual must have same size") {
         graphs.size should equal(expectedGraphs.size)
       }
@@ -75,8 +74,8 @@ trait GraphMatchingTestSupport {
     }
   }
 
-  implicit class GraphMatcher(graph: RelationalCypherGraph[LinkTable]) {
-    def shouldMatch(expectedGraph: RelationalCypherGraph[LinkTable]): Unit = verify(graph, expectedGraph)
+  implicit class GraphMatcher(graph: RelationalCypherGraph[FlinkTable]) {
+    def shouldMatch(expectedGraph: RelationalCypherGraph[FlinkTable]): Unit = verify(graph, expectedGraph)
   }
 
 }

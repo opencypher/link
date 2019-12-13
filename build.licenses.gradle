@@ -155,7 +155,7 @@ subprojects {
 // Disable dependency license validation on test and documentation projects
 [
  'flink-cypher',
-// 'flink-cypher-testing',
+ 'flink-cypher-testing',
 // 'flink-cypher-tck'
 ].each {
     project(it).tasks.validateLicenses.enabled = false

@@ -1,6 +1,6 @@
 package org.opencypher.link.testing
 
-import org.opencypher.link.impl.table.LinkCypherTable.LinkTable
+import org.opencypher.link.impl.table.LinkCypherTable.FlinkTable
 import org.opencypher.link.testing.fixture.{FlinkSessionFixture, LinkSessionFixture}
 import org.opencypher.link.testing.support.{GraphMatchingTestSupport, RecordMatchingTestSupport}
 import org.opencypher.okapi.api.graph.QualifiedGraphName
@@ -14,5 +14,5 @@ abstract class LinkTestSuite
   with GraphMatchingTestSupport
   with RecordMatchingTestSupport {
 
- def catalog(qgn: QualifiedGraphName): Option[RelationalCypherGraph[LinkTable]] = None
+ def catalog(qgn: QualifiedGraphName): Option[RelationalCypherGraph[FlinkTable]] = None
 }

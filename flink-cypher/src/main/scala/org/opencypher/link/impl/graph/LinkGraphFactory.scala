@@ -24,39 +24,12 @@
  * described as "implementation extensions to Cypher" or as "proposed changes to
  * Cypher that are not yet approved by the openCypher community".
  */
-package org.opencypher.link.testing.support
+package org.opencypher.link.impl.graph
 
-import org.opencypher.link.impl.LinkRecords
-import org.opencypher.link.testing.LinkTestSuite
-import org.opencypher.okapi.api.table.CypherRecords
-import org.opencypher.okapi.api.value.CypherValue.CypherMap
-import org.opencypher.okapi.testing.Bag
-import org.opencypher.okapi.testing.Bag._
-import org.opencypher.link.impl.LinkConverters._
-import org.scalatest.Assertion
+import org.opencypher.link.api.LinkSession
+import org.opencypher.link.impl.table.LinkCypherTable.FlinkTable
+import org.opencypher.okapi.relational.api.graph.{RelationalCypherGraph, RelationalCypherGraphFactory}
 
-trait RecordMatchingTestSupport {
-
-  self: LinkTestSuite =>
-
-  implicit class RecordMatcher(records: LinkRecords) {
-    def shouldMatch(expected: CypherMap*): Assertion = {
-      records.collect.toBag should equal(Bag(expected: _*))
-    }
-
-    def shouldMatch(expectedRecords: LinkRecords): Assertion = {
-      records.header should equal(expectedRecords.header)
-
-      val actualData = records.toLocalIterator.toSet
-      val expectedData = expectedRecords.toLocalIterator.toSet
-      actualData should equal(expectedData)
-    }
-
-  }
-
-  implicit class RichRecords(records: CypherRecords) {
-    val linkRecords: LinkRecords = records.asLink
-
-    def toMaps: Bag[CypherMap] = Bag(linkRecords.toCypherMaps.collect(): _*)
-  }
+case class LinkGraphFactory()(implicit val session: LinkSession) extends RelationalCypherGraphFactory[FlinkTable] {
+  override type Graph = RelationalCypherGraph[FlinkTable]
 }
