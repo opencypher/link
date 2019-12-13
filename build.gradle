@@ -1,0 +1,131 @@
+plugins {
+    id 'com.github.hierynomus.license' version '0.15.0' apply false
+    id 'com.github.johnrengelman.shadow' version '4.0.3' apply false
+    id 'com.github.alisiikh.scalastyle_2.12' version '2.1.0' apply false
+    id 'me.champeau.gradle.jmh' version '0.4.8' apply false
+    id "ch.kk7.spawn" version "1.0.20180924200750" apply false
+}
+
+apply from: 'build.params.gradle'
+apply plugin: 'base'
+
+allprojects {
+    group = 'org.opencypher'
+    version = ver.self
+}
+
+apply from: 'build.licenses.gradle'
+
+subprojects {
+    apply plugin: 'scala'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+        compile group: 'org.scala-lang', name: 'scala-library', version: ver.scala.full
+
+        // Seems we need to lock these down, otherwise we get runtime errors on reflection
+        compile group: 'org.scala-lang', name: 'scala-reflect', version: ver.scala.full
+        compile group: 'org.scala-lang', name: 'scala-compiler', version: ver.scala.full
+
+        compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: ver.log4j.main
+        compile group: 'org.apache.logging.log4j', name: "log4j-api-scala".scala(), version: ver.log4j.scala
+
+        testCompile group: 'org.apache.logging.log4j', name: 'log4j-core', version: ver.log4j.main
+        testCompile group: 'org.scalatest', name: "scalatest".scala(), version: ver.scalatest
+        testCompile group: 'org.scalacheck', name: "scalacheck".scala(), version: ver.scalacheck
+        testCompile group: 'org.junit.platform', name: 'junit-platform-runner', version: ver.junit.runner
+    }
+
+    test {
+        useJUnit()
+    }
+
+    ext.scalacParameters = [
+            "-target:jvm-$ver.jvm".toString(),
+            '-unchecked',
+            '-deprecation',
+            '-feature',
+            '-Xfatal-warnings',
+            '-Xfuture',
+            '-Ypartial-unification',
+            '-Ywarn-adapted-args'
+    ]
+
+    tasks.withType(ScalaCompile) {
+        options.encoding = 'UTF-8'
+        scalaCompileOptions.additionalParameters = scalacParameters
+    }
+
+    tasks.withType(ScalaDoc) {
+        scalaDocOptions.additionalParameters = scalacParameters
+    }
+
+    task sourceJar(type: Jar) {
+        classifier = 'sources'
+        from(sourceSets.main.allSource)
+    }
+
+    task docJar(type: Jar) {
+        dependsOn tasks.scaladoc
+        classifier = 'javadoc'
+        from(tasks.scaladoc.destinationDir)
+    }
+
+    task testJar(type: Jar) {
+        classifier = 'tests'
+        from(sourceSets.test.output)
+    }
+
+    tasks.withType(Jar) {
+        from(tasks.generateLicensesFiles) {
+            into("META-INF/")
+        }
+    }
+
+    task licenseFile {
+        outputs.file(project.parent.file('LICENSE.txt'))
+    }
+
+    task dependencySearch(type: DependencyInsightReportTask) {
+        description 'Searches all projects for a dependency'
+        group 'help'
+    }
+
+    task runApp {
+        dependsOn tasks.classes
+        group 'run'
+        description 'Run a custom Scala app (use -PmainClass=com.my.package.App)'
+        doLast {
+            javaexec {
+                classpath = sourceSets.main.runtimeClasspath
+                main = project.getProperty("mainClass")
+            }
+        }
+    }
+
+    // copied from https://stackoverflow.com/a/38058671/568723
+    task depSize  {
+        description 'Lists all dependencies sorted by their size'
+        doLast {
+            final formatStr = "%,10.2f"
+            final conf = configurations.default
+            final size = conf.collect { it.length() / (1024 * 1024) }.sum()
+            final out = new StringBuffer()
+            out << 'Total dependencies size:'.padRight(45)
+            out << "${String.format(formatStr, size)} Mb\n\n"
+            conf.sort { -it.length() }
+                    .each {
+                        out << "${it.name}".padRight(45)
+                        out << "${String.format(formatStr, (it.length() / 1024))} kb\n"
+                    }
+            println(out)
+        }
+    }
+}
+
+apply from: 'build.publishing.gradle'
+apply from: 'build.style.gradle'

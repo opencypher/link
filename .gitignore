@@ -1,0 +1,23 @@
+dependency-reduced-pom.xml
+version.txt
+build/test/
+*/build
+
+# IDE cruft
+.idea/
+*.iml
+.settings
+.project
+out/
+
+# Gradle
+.gradle
+/build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+# gradle/wrapper/gradle-wrapper.properties
+
+# Demo data sets
+yelp_json
+yelp_graph
