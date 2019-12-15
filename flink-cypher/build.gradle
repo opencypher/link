@@ -3,7 +3,8 @@ apply plugin: 'com.github.johnrengelman.shadow'
 description = 'Link: Cypher for Apache Flink'
 
 dependencies {
-    compile group: 'org.opencypher', name: 'okapi-relational', version: ver.okapi
+    compile project(':flink-okapi-relational')
+//    compile group: 'org.opencypher', name: 'okapi-relational', version: ver.okapi
     compile group: 'org.opencypher', name: 'okapi-neo4j-io', version: ver.okapi
 
     compile group: 'org.neo4j.driver', name: 'neo4j-java-driver', version: ver.neo4j.driver

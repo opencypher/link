@@ -1,4 +1,5 @@
 rootProject.name = 'link'
 include 'flink-cypher'
 include 'flink-cypher-testing'
+include 'flink-okapi-relational'
 
