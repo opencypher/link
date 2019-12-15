@@ -27,9 +27,9 @@
 package org.opencypher.okapi.relational.api.table
 
 import org.opencypher.okapi.api.table.CypherTable
+import org.opencypher.okapi.api.types.CypherType
 import org.opencypher.okapi.api.value.CypherValue.CypherMap
 import org.opencypher.okapi.ir.api.expr.{Aggregator, Expr, Var}
-import org.opencypher.okapi.relational.api.graph.RelationalCypherSession
 import org.opencypher.okapi.relational.impl.planning.{JoinType, Order}
 import org.opencypher.okapi.relational.impl.table.RecordHeader
 
@@ -167,7 +167,7 @@ trait Table[T <: Table[T]] extends CypherTable {
     * @param parameters          query parameters
     * @return
     */
-  def withColumns(columns: (Expr, String)*)(implicit header: RecordHeader, parameters: CypherMap): T
+  def withColumns(columns: (Expr, (String, Option[CypherType]))*)(implicit header: RecordHeader, parameters: CypherMap): T
 
   /**
     * Prints the table to the system console.

@@ -243,7 +243,7 @@ final case class Add[T <: Table[T] : TypeTag](
     if (physicalAdditions.isEmpty) {
       in.table
     } else {
-      in.table.withColumns(physicalAdditions.map(expr => expr -> header.column(expr)): _*)(header, context.parameters)
+      in.table.withColumns(physicalAdditions.map(expr => expr -> ((header.column(expr), None))): _*)(header, context.parameters)
     }
   }
 }
@@ -258,7 +258,10 @@ final case class AddInto[T <: Table[T] : TypeTag](
   }
 
   override lazy val _table: T = {
-    val valuesToColumnNames = valueIntoTuples.map { case (value, into) => value -> header.column(into) }
+    val valuesToColumnNames = valueIntoTuples.map {
+      case (value, into) if value.cypherType == CTNull => value -> ((header.column(into), Some(into.cypherType)))
+      case (value, into) => value -> ((header.column(into), None))
+    }
     in.table.withColumns(valuesToColumnNames: _*)(header, context.parameters)
   }
 }

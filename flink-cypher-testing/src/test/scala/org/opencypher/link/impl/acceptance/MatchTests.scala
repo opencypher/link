@@ -417,7 +417,7 @@ class MatchTests extends LinkTestSuite with ScanGraphInit {
       }
     }
 
-    it("reports error on mismatched scans on constructed graph") {
+    ignore("reports error on mismatched scans on constructed graph") {
       an[IllegalArgumentException] shouldBe thrownBy {
         session.cypher(
           """

@@ -106,13 +106,19 @@ object LinkCypherTable {
 
     override def group(by: Set[Var], aggregations: Map[String, Aggregator])(implicit header: RecordHeader, parameters: CypherValue.CypherMap): FlinkTable = ???
 
-    override def withColumns(columns: (Expr, String)*)
+    override def withColumns(columns: (Expr, (String, Option[CypherType]))*)
       (implicit header: RecordHeader, parameters: CypherValue.CypherMap): FlinkTable = {
       val initialColumnNameToFieldReference: Map[String, Expression] =
         table.columns.map(c => c -> UnresolvedFieldReference(c)).toMap
-      val updatedColumns = columns.foldLeft(initialColumnNameToFieldReference) { case (columnMap, (expr, columnName)) =>
-        val convertedExpr = expr.asFlinkSQLExpr(header, table, parameters).as(Symbol(columnName))
-        columnMap + (columnName -> convertedExpr)
+      val updatedColumns = columns.foldLeft(initialColumnNameToFieldReference) { case (columnMap, (expr, (columnName, castType))) =>
+        val convertedExpr = expr.asFlinkSQLExpr(header, table, parameters)
+        val castedExpr = if (castType.isDefined) {
+          convertedExpr.cast(castType.get.getFlinkType)
+        } else {
+          convertedExpr
+        }
+        val processedExpr = castedExpr.as(Symbol(columnName))
+        columnMap + (columnName -> processedExpr)
       }
       val existingColumnNames = table.columns
       val columnsForSelect = existingColumnNames.map(updatedColumns) ++
