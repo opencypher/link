@@ -1,0 +1,24 @@
+apply plugin: 'com.github.johnrengelman.shadow'
+
+description = 'Okapi Relational for Flink - Relational Algebra for Cypher on Apache Flink'
+
+dependencies {
+    compile group: 'org.opencypher', name: 'okapi-logical', version: ver.okapi
+
+    testCompile group: 'org.opencypher', name: 'okapi-testing', version: ver.okapi
+}
+
+shadowJar {
+    classifier = 'all'
+
+    from project.sourceSets.main.output
+    configurations = [project.configurations.runtime]
+
+    dependencies {
+        exclude(dependency('org.scala-lang:'))
+        exclude(dependency('org.scala-lang.modules:'))
+    }
+    exclude "META-INF/versions/**/*"
+}
+
+pub.full.artifacts += 'shadowJar'
