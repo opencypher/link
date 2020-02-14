@@ -4,7 +4,7 @@ import org.apache.flink.api.common.typeinfo.{BasicArrayTypeInfo, PrimitiveArrayT
 import org.apache.flink.api.java.typeutils.ObjectArrayTypeInfo
 import org.apache.flink.table.api.{TableSchema, Types}
 import org.apache.flink.table.expressions.ResolvedFieldReference
-import org.opencypher.okapi.api.types.{CTBoolean, CTDate, CTFloat, CTIdentity, CTInteger, CTList, CTNode, CTNull, CTRelationship, CTString, CTVoid, CypherType}
+import org.opencypher.okapi.api.types.{CTBoolean, CTDate, CTFalse, CTFloat, CTIdentity, CTInteger, CTList, CTNode, CTNull, CTRelationship, CTString, CTTrue, CTVoid, CypherType}
 import org.opencypher.okapi.impl.exception.{IllegalArgumentException, IllegalStateException, NotImplementedException}
 import org.opencypher.okapi.ir.api.expr.Var
 import org.opencypher.okapi.relational.impl.table.RecordHeader
@@ -30,6 +30,8 @@ object FlinkConversions {
         case CTString => Some(Types.STRING)
         case CTInteger => Some(Types.LONG)
         case CTBoolean => Some(Types.BOOLEAN)
+        case CTTrue => Some(Types.BOOLEAN)
+        case CTFalse => Some(Types.BOOLEAN)
         case CTFloat => Some(Types.DOUBLE)
         case CTIdentity => Some(Types.LONG)
         case CTDate => Some(Types.LONG)
