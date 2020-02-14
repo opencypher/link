@@ -24,21 +24,25 @@
  * described as "implementation extensions to Cypher" or as "proposed changes to
  * Cypher that are not yet approved by the openCypher community".
  */
-package org.opencypher.link.testing
+package org.opencypher.link.testing.support.creation.rows
 
-import org.opencypher.link.impl.table.LinkCypherTable.FlinkTable
-import org.opencypher.link.testing.fixture.{FlinkSessionFixture, LinkSessionFixture}
-import org.opencypher.link.testing.support.{GraphMatchingTestSupport, RecordMatchingTestSupport}
-import org.opencypher.okapi.api.graph.QualifiedGraphName
-import org.opencypher.okapi.relational.api.graph.RelationalCypherGraph
-import org.opencypher.okapi.testing.BaseTestSuite
+import java.lang
 
-abstract class LinkTestSuite
-  extends BaseTestSuite
-  with FlinkSessionFixture
-  with LinkSessionFixture
-  with GraphMatchingTestSupport
-  with RecordMatchingTestSupport {
+import org.apache.flink.types.Row
+import scala.collection.JavaConverters._
 
- def catalog(qgn: QualifiedGraphName): Option[RelationalCypherGraph[FlinkTable]] = None
+object ScalaRow {
+
+  def of(values: Any*): Row = {
+    val javaValues: Seq[Object] = values.map {
+      case i: Int => i: java.lang.Integer
+      case l: Long => l: java.lang.Long
+      case b: Boolean => b: lang.Boolean
+      case f: Float => f: java.lang.Float
+      case s: String => s: java.lang.String
+    }
+
+    Row.of(javaValues: _*)
+  }
+
 }

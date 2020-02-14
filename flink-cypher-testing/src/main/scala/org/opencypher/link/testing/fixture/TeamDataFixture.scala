@@ -199,7 +199,7 @@ trait TeamDataFixture extends TestDataFixture {
         (2L: java.lang.Long, 5L: java.lang.Long, 4L: java.lang.Long, 2013L: java.lang.Long),
         (3L: java.lang.Long, 6L: java.lang.Long, 4L: java.lang.Long, 2016L: java.lang.Long)
       )
-    )
+    ), 'SRC, 'ID, 'DST, 'SINCE
   )
 
   lazy val knowsTable = LinkElementTable.create(knowsMapping, knowsDF)
