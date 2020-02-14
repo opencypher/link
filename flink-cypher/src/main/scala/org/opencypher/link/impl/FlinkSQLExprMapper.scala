@@ -132,6 +132,7 @@ object FlinkSQLExprMapper {
         case div: Divide => (child0 / child1).cast(div.cypherType.getFlinkType)
 
         case _: Id => child0
+        case _: ToId => child0
 
         case Labels(e)=>
           val node = e.owner.get
