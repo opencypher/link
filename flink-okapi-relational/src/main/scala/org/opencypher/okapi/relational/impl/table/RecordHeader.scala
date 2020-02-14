@@ -296,7 +296,7 @@ case class RecordHeader(exprToColumn: Map[Expr, String]) {
       else candidateName
     }
 
-    expr.toString
+    val firstColumnNameCandidate = expr.toString
         .replaceAll("-", "_")
         .replaceAll(":", "_")
         .replaceAll("\\.", "_")
@@ -306,6 +306,8 @@ case class RecordHeader(exprToColumn: Map[Expr, String]) {
         .replace(" ", "")
         .replace("?", "")
         .replace("|", "_or_")
+
+    recConflictFreeColumnName(firstColumnNameCandidate)
   }
 
   def withExpr(expr: Expr): RecordHeader = {
