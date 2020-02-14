@@ -41,7 +41,7 @@ import org.opencypher.okapi.testing.Bag
 
 import scala.reflect.runtime.universe
 
-abstract class LinkGraphTest extends LinkTestSuite
+class LinkGraphTest extends LinkTestSuite
   with GraphConstructionFixture
   with RecordsVerificationFixture
   with TeamDataFixture {

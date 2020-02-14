@@ -27,6 +27,7 @@
 package org.opencypher.link.testing.fixture
 
 import org.apache.flink.api.scala._
+import org.apache.flink.table.api.scala._
 import org.apache.flink.table.api.Table
 import org.apache.flink.types.Row
 import org.opencypher.link.api.io.LinkElementTable
@@ -181,7 +182,7 @@ trait TeamDataFixture extends TestDataFixture {
         (3L: java.lang.Long, false: java.lang.Boolean, "Max", 1337L: java.lang.Long),
         (4L: java.lang.Long, false: java.lang.Boolean, "Stefan", 9L: java.lang.Long)
       )
-    )
+    ), 'ID, 'NAME, 'NUM
   )
 
   lazy val personTable = LinkElementTable.create(personMapping, personDF)
@@ -221,7 +222,7 @@ trait TeamDataFixture extends TestDataFixture {
         (300L: java.lang.Long, "Eve", 84L: java.lang.Long, "F"),
         (400L: java.lang.Long, "Carl", 49L: java.lang.Long, "R")
       )
-    )
+    ), 'ID, 'NAME, 'NUM, 'LANG
   )
 
   lazy val programmerTable = LinkElementTable.create(programmerMapping, programmerDF)
@@ -241,7 +242,7 @@ trait TeamDataFixture extends TestDataFixture {
         (300L: java.lang.Long, "Javascript"),
         (400L: java.lang.Long, "Typescript")
       )
-    )
+    ), 'ID, 'LANG
   )
 
   lazy val brogrammerTable = LinkElementTable.create(brogrammerMapping, brogrammerDF)
@@ -261,7 +262,7 @@ trait TeamDataFixture extends TestDataFixture {
         (30L: java.lang.Long, "The Eye of the World", 1990L: java.lang.Long),
         (40L: java.lang.Long, "The Circle", 2013L: java.lang.Long)
       )
-    )
+    ), 'ID, 'NAME, 'YEAR
   )
 
   lazy val  bookTable = LinkElementTable.create(bookMapping, bookDF)
@@ -277,7 +278,7 @@ trait TeamDataFixture extends TestDataFixture {
         (300L: java.lang.Long, 300L: java.lang.Long, 30L: java.lang.Long, true: java.lang.Boolean),
         (400L: java.lang.Long, 400L: java.lang.Long, 20L: java.lang.Long, false: java.lang.Boolean)
       )
-    )
+    ), 'SRC, 'ID, 'DST, 'RECOMMENDS
   )
 
   lazy val readsTable = LinkElementTable.create(readsMapping, readsDF)
@@ -288,7 +289,7 @@ trait TeamDataFixture extends TestDataFixture {
   private lazy val influencesDF: Table = session.tableEnv.fromDataSet(
     session.env.fromCollection(
       Seq((10L: java.lang.Long, 1000L: java.lang.Long, 20L: java.lang.Long))
-    )
+    ), 'SRC, 'ID, 'DST
   )
 
   lazy val influencesTable = LinkElementTable.create(influencesMapping, influencesDF)
