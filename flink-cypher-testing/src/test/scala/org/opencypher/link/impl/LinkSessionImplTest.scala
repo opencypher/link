@@ -11,7 +11,7 @@ import org.opencypher.okapi.testing.Bag._
 
 class LinkSessionImplTest extends LinkTestSuite with TeamDataFixture with GraphConstructionFixture {
 
-  it("can use multiple session graph data sources") {
+  ignore("can use multiple session graph data sources") {
     session.registerSource(Namespace("working"), new SessionGraphDataSource())
     session.registerSource(Namespace("foo"), new SessionGraphDataSource())
 
@@ -43,7 +43,7 @@ class LinkSessionImplTest extends LinkTestSuite with TeamDataFixture with GraphC
     ))
   }
 
-  it("can execute sql on registered tables") {
+  ignore("can execute sql on registered tables") {
 
     session.tableEnv.registerTable("people", personDF)
     session.tableEnv.registerTable("knows", knowsDF)
